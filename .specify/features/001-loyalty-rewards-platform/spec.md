@@ -1,141 +1,199 @@
-﻿# Detailed Specification: Production-Grade Loyalty & Rewards Management Platform
+﻿# Specification: Dataset-Driven Loyalty & Rewards Rules
 
 **Feature ID**: `001-loyalty-rewards-platform`
-
-**Created**: 2025-09-01
-
-**Status**: Detailed Specification - Ready for Planning
-
-**Version**: 2.0 (Comprehensive Functional Specification)
+**Created**: 2026-09-03
+**Status**: Updated Specification - Ready for Planning
+**Version**: 2.1
 
 ---
 
-## 1. MEMBER MANAGEMENT
+## Overview
 
-### Functional Requirements
+This specification defines a deterministic Loyalty & Rewards Engine using the provided dataset
+(`.specify/capstone2_loyalty_dataset.json`) as the source of business rules and sample behavior.
+The scope of this update is limited to rule extraction and acceptance behavior for earn,
+redemption, tiering, promotions, and human approval gating.
 
-**FR-M1**: System MUST support member enrollment where:
-- A new customer provides at minimum: email, full name, date of birth, phone number (optional)
-- System MUST generate a unique, non-sequential loyalty member ID (e.g., UUID or masked ID)
-- System MUST prevent duplicate accounts for the same email address
-- Member status is set to ACTIVE upon enrollment
-- System MUST store enrollment timestamp and audit user/system
-- System MUST validate email format and reject duplicate emails with appropriate error
+## User Scenarios & Testing
 
-**FR-M2**: System MUST maintain member profile information:
-- Unique member ID (primary identifier)
-- Email address (unique constraint)
-- Full name, date of birth
-- Phone number (optional)
-- Status: ACTIVE, INACTIVE, SUSPENDED
-- Account creation date, last updated date
-- Additional optional fields: address, preferred language, communication preferences (future)
+### Primary User Story
+As a loyalty program operator, I want the system to apply earning, redemption, tier, and promotion
+rules consistently so that balances are correct, auditable, and safe to expose.
 
-**FR-M3**: System MUST support member profile retrieval:
-- Members can view their own profile (GET /members/{member_id})
-- Admins can view any member profile (GET /admin/members/{member_id})
-- System MUST return member info + current loyalty account status/balance
-- System MUST include member tier, loyalty account summary
-
-**FR-M4**: System MUST support member information updates:
-- Members can update personal info: name, phone, address (if applicable)
-- Admins can update any member info and status
-- System MUST audit all updates with actor, timestamp, before/after values
-- System MUST prevent email changes after enrollment (or handle separately with verification)
-
-**FR-M5**: System MUST support member status lifecycle:
-- Status transitions: ACTIVE ↔ INACTIVE, ACTIVE → SUSPENDED, SUSPENDED → ACTIVE, INACTIVE → ACTIVE
-- INACTIVE: Member can be reactivated; loyalty account preserved
-- SUSPENDED: Temporary suspension; no earning/redemption allowed until reactivated; audit reason required
-- Admins only can change member status
-- Every status change MUST be audited with reason/actor/timestamp
-
-**FR-M6**: System MUST enforce member status validation:
-- All loyalty operations (earn, redeem, view balance) MUST check member status first
-- INACTIVE or SUSPENDED members MUST be rejected with appropriate error
-- Error message MUST NOT expose member existence (security: prevent enumeration)
+### Acceptance Scenarios Summary
+1. Calculate points earned from spend using base points and tier multiplier.
+2. Apply valid promotion benefits according to promotion type and date window.
+3. Prevent invalid redemption and enforce points non-negativity.
+4. Recalculate or validate member tier from configured thresholds.
+5. Require human approval for high-value redemption requests.
+6. Create an audit entry for every successful earn and redeem event.
 
 ### Edge Cases
+- Promotion is active by date but does not apply to transaction category.
+- Two promotions are simultaneously eligible while `promo_stackable = false`.
+- Redemption request equals available balance versus exceeds available balance.
+- High-value redemption at exactly 30000 points versus above 30000 points.
 
-- What happens if email is updated after enrollment? **Default**: Email updates not allowed after initial creation (request reverification if needed post-MVP)
-- Can member have multiple active loyalty accounts? **Default**: No; unique constraint on member → loyalty account (1:1)
-- What is the retention policy for deleted members? **Default**: Members are never deleted; marked INACTIVE. Retention: 7 years minimum for audit/reconciliation
+## Rule Extraction from Dataset
+
+### Earn Rules
+- Base earning rate is `10` points per USD.
+- Tier multipliers are: BASE `1.0`, SILVER `1.1`, GOLD `1.25`, PLATINUM `1.5`.
+- Earn points are calculated as `eligible_spend_usd * base_points_per_usd * tier_multiplier`.
+- Deterministic rounding rule: earned points are rounded down to the nearest whole point.
+
+### Redemption Rules
+- Award night requires `15000` points.
+- Suite award requires `40000` points.
+- Monetary value reference is `0.007` USD per point for valuation/reporting.
+- Redemption points are represented as negative deltas in the transaction ledger.
+- A redemption is rejected if it would produce a negative points balance.
+
+### Tier Rules
+- Tier thresholds are configured by minimum lifetime points:
+  - BASE: `0`
+  - SILVER: `10000`
+  - GOLD: `30000`
+  - PLATINUM: `75000`
+- The effective tier is the highest tier whose `min_points` is less than or equal to member
+  lifetime points.
+
+### Promotion Rules
+- `PROMO-1` Double Points Weekend: type `EARN_MULTIPLIER`, multiplier `2.0`, valid
+  `2026-09-20` to `2026-09-22`, applies to `ROOM`.
+- `PROMO-2` 5k Bonus on 3rd Stay: type `BONUS_POINTS`, adds `5000` points on qualifying third
+  stay, valid `2026-09-01` to `2026-12-31`.
+- `PROMO-3` Flight Redemption -20%: type `REDEEM_DISCOUNT`, value `0.2`, valid
+  `2026-10-01` to `2026-10-31`, applies to `FLIGHT`.
+- Promotion stacking is disabled (`promo_stackable = false`); at most one promotion may apply per
+  transaction.
+
+### Human Approval Rule
+- Any redemption request strictly greater than `30000` points requires explicit human approval
+  before final commitment.
+- Requests at or below `30000` follow automated policy checks only.
+
+## Functional Requirements
+
+- **FR-001 Earn Calculation**: The system MUST calculate earned points using base points per USD,
+  member tier multiplier, and deterministic rounding.
+- **FR-002 Earn Validation**: The system MUST reject earn requests with invalid amounts,
+  unsupported categories, or missing member identifiers.
+- **FR-003 Redemption Validation**: The system MUST reject redemptions that exceed available
+  balance or violate reward policy.
+- **FR-004 Redemption Commitment**: On successful redemption, the system MUST persist a single
+  negative ledger entry and update available balance atomically.
+- **FR-005 Tier Resolution**: The system MUST determine member tier from configured threshold
+  rules and apply corresponding earn multiplier.
+- **FR-006 Promotion Eligibility**: The system MUST evaluate promotions by date window, transaction
+  type, and applicability scope.
+- **FR-007 Promotion Exclusivity**: When multiple promotions could apply, the system MUST select
+  exactly one applicable promotion because stacking is disabled.
+- **FR-008 Human Gate Enforcement**: The system MUST route redemptions above 30000 points to a
+  human approval state and MUST NOT finalize until approved.
+- **FR-009 Audit Logging**: Every successful earn and redeem operation MUST create an immutable
+  audit log entry with event ID, member ID, before/after balances, rule version, and timestamp.
+- **FR-010 No Silent Mutations**: The system MUST prohibit any balance mutation that lacks a
+  corresponding committed ledger and audit event.
+- **FR-011 Deterministic Replay**: Replaying the same ordered transaction inputs against the same
+  rule set MUST produce identical balances and tiers.
+- **FR-012 Privacy-Safe Outputs**: Standard outputs MUST expose non-PII identifiers only and MUST
+  not include member names or email addresses unless explicitly authorized.
+
+## Non-Functional Requirements
+
+- **NFR-001 Determinism**: For identical validated inputs and rule versions, output balances,
+  tiers, and audit payloads are identical.
+- **NFR-002 Consistency**: Balance update and ledger/audit persistence for earn/redeem complete as
+  one atomic unit.
+- **NFR-003 Traceability**: 100% of successful earn/redeem events are queryable by transaction ID
+  and include full before/after state.
+- **NFR-004 Integrity**: The system never returns a committed state where available points are
+  negative.
+- **NFR-005 Privacy**: Default customer-visible and operational outputs avoid direct PII exposure.
+- **NFR-006 Explainability**: Decision responses include machine-readable reason codes for
+  acceptance/rejection and approval-gate routing.
+- **NFR-007 Time Handling**: Rule windows are evaluated in UTC with ISO-8601 timestamps.
+
+## Gherkin Acceptance Criteria
+
+```gherkin
+Feature: Loyalty and rewards rule execution
+
+  Scenario: Calculate earn points using tier multiplier
+	Given a member with tier "GOLD"
+	And base points per USD is 10
+	When the member earns on a qualifying 200 USD room spend
+	Then earned points are 2500
+	And an earn audit log is created
+
+  Scenario: Apply earn multiplier promotion within valid window
+	Given promotion "PROMO-1" is active for ROOM from 2026-09-20 to 2026-09-22
+	And promotion stacking is disabled
+	When a qualifying ROOM earn occurs on 2026-09-21
+	Then the selected promotion is "PROMO-1"
+	And points are multiplied by 2.0
+
+  Scenario: Do not apply promotion outside category scope
+	Given promotion "PROMO-1" applies only to ROOM
+	When an earn transaction category is FLIGHT on 2026-09-21
+	Then "PROMO-1" is not applied
+
+  Scenario: Reject redemption when balance is insufficient
+	Given a member has 12000 available points
+	When the member requests an award night redemption of 15000 points
+	Then the redemption is rejected
+	And no balance change is committed
+	And no redeem ledger entry is written
+
+  Scenario: Allow automated redemption at threshold
+	Given human approval is required for redemption over 30000 points
+	And a member has 45000 available points
+	When the member redeems 30000 points
+	Then the redemption is processed without human approval
+	And a redeem audit log is created
+
+  Scenario: Route high-value redemption for manual approval
+	Given human approval is required for redemption over 30000 points
+	And a member has 90000 available points
+	When the member requests 40000 points redemption
+	Then the request enters pending human approval
+	And no final balance change is committed until approval
+
+  Scenario: Resolve tier from lifetime points thresholds
+	Given tier thresholds include SILVER at 10000 and GOLD at 30000
+	When a member has 31250 lifetime points
+	Then the member tier is GOLD
+
+  Scenario: Enforce non-stackable promotions
+	Given two promotions are both eligible for the same transaction
+	And promotion stacking is disabled
+	When the transaction is evaluated
+	Then exactly one promotion is applied
+	And the choice is recorded in the audit payload
+
+  Scenario: Guarantee deterministic replay
+	Given a fixed ordered transaction list and unchanged rules
+	When the engine is executed twice
+	Then both runs produce identical balances, tiers, and audit entries
+```
+
+## Assumptions
+
+- Spend amount and transaction category are provided in earn requests even though the dataset
+  transaction samples already contain computed points.
+- Third-stay counting for `PROMO-2` is based on completed qualifying stay events per member.
+- If multiple promotions are eligible and stacking is disabled, selection uses a deterministic
+  precedence policy defined in planning.
+- Time windows are inclusive of start and end dates in UTC.
+
+## Success Criteria
+
+- 100% of successful earn and redeem operations produce exactly one corresponding audit log.
+- 100% of rejected redemptions leave balances unchanged.
+- Replaying the same sample dataset yields zero balance or tier drift across repeated runs.
+- 100% of output payloads in standard mode use non-PII member identifiers.
 
 ---
 
-## 2. LOYALTY ACCOUNT
-
-### Functional Requirements
-
-**FR-LA1**: System MUST create exactly one loyalty account per member:
-- Created automatically upon member enrollment
-- 1:1 relationship between Member and LoyaltyAccount
-- Loyalty account ID (unique, different from member ID)
-- Account creation timestamp = enrollment timestamp
-- Account status: ACTIVE (created), SUSPENDED, CLOSED (future)
-
-**FR-LA2**: System MUST maintain loyalty account balance with four point types:
-- **available_balance**: Points available for redemption (≥ 0, cannot be negative)
-- **lifetime_earned_points**: Cumulative all-time earned points (sum of all successful EARN transactions)
-- **lifetime_redeemed_points**: Cumulative all-time redeemed points (sum of all successful REDEEM transactions)
-- **expired_points**: Cumulative all-time expired points (sum of all EXPIRATION transactions)
-- Invariant: available_balance = lifetime_earned_points - lifetime_redeemed_points - expired_points (always true, used for reconciliation)
-
-**FR-LA3**: System MUST retrieve loyalty account information:
-- GET /loyalty-account/{member_id} returns: member ID, account ID, current balances (all four types), tier, last transaction date, status
-- GET /members/{member_id}/balance returns: current_available_balance, tier, expiring_soon_points (points expiring in next 30 days)
-- All balance queries MUST reflect committed/completed transactions only
-- Pending/held points (if applicable) MUST NOT be included in available_balance
-
-**FR-LA4**: System MUST enforce account status transitions:
-- ACTIVE: Normal operations allowed (earn, redeem, view, etc.)
-- SUSPENDED: No earning, redemption, or expiration; admin reversal/adjustment allowed
-- CLOSED: No operations; historical data retained for audit
-- Member SUSPENDED → Account SUSPENDED automatically
-- Account status changes MUST be audited
-
-**FR-LA5**: System MUST prevent invalid balance states:
-- available_balance MUST never become negative
-- Redemption requests MUST be rejected if available_balance < requested_points
-- All balance-changing operations MUST verify and maintain invariant (sum validation during reconciliation)
-- System MUST support read-only snapshot of balance as of point in time (for audit/dispute resolution)
-
-**FR-LA6**: System MUST handle member deactivation/suspension impact on loyalty account:
-- Member status change → account automatically transitions
-- Existing points are preserved; no automatic expiration
-- Admin can manually adjust points during suspension
-- Account can be reactivated when member reactivated
-
----
-
-[Content continues with sections 3-24, covering all 24 functional areas...]
-
-*DETAILED SECTIONS INCLUDED IN FULL SPECIFICATION:*
-- Section 3: EARN POINTS (FR-E1 through FR-E7)
-- Section 4: REDEEM POINTS (FR-R1 through FR-R8)
-- Section 5: POINTS LEDGER (FR-L1 through FR-L6)
-- Section 6: POINT REVERSAL (FR-PRevR1 through FR-PRevR7)
-- Section 7: POINT EXPIRATION (FR-PE1 through FR-PE7)
-- Section 8: LOYALTY TIERS (FR-T1 through FR-T8)
-- Section 9: REWARDS CATALOG (FR-RC1 through FR-RC8)
-- Section 10: PROMOTIONS & BONUS POINTS (FR-P1 through FR-P9)
-- Section 11: MEMBER ELIGIBILITY (FR-EL1 through FR-EL4)
-- Section 12: PARTNER TRANSACTIONS (FR-PT1 through FR-PT9)
-- Section 13: ADMINISTRATION (FR-ADM1 through FR-ADM11)
-- Section 14: MANUAL POINT ADJUSTMENT (FR-MA1 through FR-MA5)
-- Section 15: REST API REQUIREMENTS (Complete API specifications for all endpoints)
-- Section 16: SECURITY & AUTHORIZATION (FR-SEC1 through FR-SEC10)
-- Section 17: AUDIT (FR-AUD1 through FR-AUD3)
-- Section 18: ERROR HANDLING (FR-ERR1 through FR-ERR4)
-- Section 19: CONCURRENCY & CONSISTENCY REQUIREMENTS (FR-CC1 through FR-CC9)
-- Section 20: OBSERVABILITY (FR-OBS1 through FR-OBS6)
-- Section 21: NON-FUNCTIONAL REQUIREMENTS (Performance, Scalability, Availability, Reliability, Security, Maintainability, Testability)
-- Section 22: USER STORIES & ACCEPTANCE CRITERIA (9 detailed user stories with Given/When/Then scenarios)
-- Section 23: MVP SCOPE (Must-have, Should-have, Out-of-scope)
-- Section 24: ASSUMPTIONS & OPEN QUESTIONS (10 assumptions, 6 open questions)
-
-**END OF SPECIFICATION**
-
-**Status**: ✅ COMPLETE - Ready for Planning Phase
-
-**Next Phase**: /speckit-plan to derive architecture, database design, API contracts, and implementation tasks
+**Status**: Ready for `/speckit-plan`

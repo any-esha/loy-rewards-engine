@@ -1,49 +1,101 @@
-<!-- Sync Impact Report: Constitution v1.0.0 (initial) -->
-<!-- - Initial constitution created for Loyalty & Rewards Engine -->
-<!-- - 7 core principles established for spec-first, agentic, AI-native development -->
-<!-- - Governance framework with amendment procedures and compliance review -->
+<!-- Sync Impact Report -->
+<!-- Version change: 1.0.0 -> 1.1.0 -->
+<!-- Modified principles: -->
+<!-- - I. Spec-First Development (NON-NEGOTIABLE) -> I. Deterministic Spec-First Development (NON-NEGOTIABLE) -->
+<!-- - II. Test-Driven Delivery (NON-NEGOTIABLE) -> II. Test-Driven, Repeatable Delivery (NON-NEGOTIABLE) -->
+<!-- - III. Agentic Implementation with Human Oversight -> III. Agentic Implementation with Human Oversight -->
+<!-- - VI. Security & Data Protection (NON-NEGOTIABLE) -> VI. Security, Privacy, and No-PII Outputs (NON-NEGOTIABLE) -->
+<!-- Added sections: -->
+<!-- - Architecture Guardrails -->
+<!-- - Canonical Domain Models -->
+<!-- - Explicit Assumptions -->
+<!-- Removed sections: none -->
+<!-- Follow-up TODOs: none -->
 
 # Loyalty & Rewards Engine Constitution
 
 ## Core Principles
 
-### I. Spec-First Development (NON-NEGOTIABLE)
-Every feature begins with a comprehensive specification document created before implementation. Specifications MUST include clear acceptance criteria, design rationale, and external interface contracts. Specs are written collaboratively and reviewed for completeness before task generation. This ensures all stakeholders (humans and agents) operate from a shared, traceable source of truth.
+### I. Deterministic Spec-First Development (NON-NEGOTIABLE)
+Every feature begins with a comprehensive specification document created before implementation.
+Specifications MUST define deterministic behavior for business logic, including explicit formulas,
+rounding behavior, and event-order handling. For the same validated input, implementations MUST
+produce the same output and side effects across all environments.
 
-### II. Test-Driven Delivery (NON-NEGOTIABLE)
-Tests are written first, validated against acceptance criteria, and MUST pass before feature implementation is considered complete. Test suites cover unit, integration, and end-to-end scenarios for core business logic: points calculations, tier transitions, promotion rules, and human-gated approval workflows. Test results are visible in CI/CD and gate all production deployments.
+### II. Test-Driven, Repeatable Delivery (NON-NEGOTIABLE)
+Tests are written first and MUST prove repeatability, auditability, and invariants for core logic.
+At minimum, suites cover points calculations, tier transitions, promotion rules, redemption gates,
+and ledger mutation semantics. Any change that can alter balances MUST include failing tests first,
+then passing tests that show exact expected deltas.
 
 ### III. Agentic Implementation with Human Oversight
-Agents and LLM-powered tools perform multi-step implementation, refactoring, and code generation tasks autonomously, but all business-critical changes (tier rules, point multipliers, approval workflows) require human review and gate approval before deployment. Agent actions are logged with commit histories showing diff-based rationales.
+Agents and LLM-powered tools may implement multi-step changes, but business-critical logic
+(tier rules, multipliers, promotion eligibility, redemption thresholds) requires human approval
+before release. All autonomous actions MUST remain traceable through commits, tests, and
+design artifacts.
 
 ### IV. Context Steering & Prompt Engineering
-Custom prompts, instructions, and agent configurations guide AI behavior with project-specific conventions, domain terminology, and governance rules. Context is organized hierarchically: constitution (top-level principles) → project guidance → feature-specific context. All prompts are versioned and reviewed for security (no PII/secrets leakage) before commit.
+Custom prompts, instructions, and agent configurations guide AI behavior with project-specific
+conventions and governance rules. Context is organized hierarchically: constitution -> project
+guidance -> feature-specific context. All prompts are versioned and reviewed for security before
+commit.
 
 ### V. Traceability & Governance
-Every feature change is linked to: specification → tasks → commits → tests → deployments. Requirement IDs are embedded in commit messages and test names. Human-gated decisions (tier recalculation triggers, promotion eligibility rules) are documented with decision rationale and approval timestamps. CodeQL and secret-scanning gates prevent PII/credential leakage.
+Every feature change is linked to specification -> tasks -> commits -> tests -> deployments.
+Every earn and redeem operation MUST create an immutable audit log entry that captures actor,
+timestamp, correlation/reference ID, before/after balances, and rule version used. No balance
+change may occur without a corresponding persisted audit event.
 
-### VI. Security & Data Protection (NON-NEGOTIABLE)
-User reward data, promotion rules, and tier configurations are protected with role-based access controls. All data transformations (points, tier changes) are immutable and auditable. Secrets are scanned in CI/CD; no hardcoded API keys or database credentials in code. Human review is mandatory before any changes to sensitive business logic (points multipliers, redemption rules).
+### VI. Security, Privacy, and No-PII Outputs (NON-NEGOTIABLE)
+Reward data and configuration are protected with role-based access controls. Outputs exposed to
+logs, APIs, analytics, and AI tooling MUST not include direct PII unless explicitly required and
+access-controlled. Default outputs MUST use non-identifying member references and masked values.
+Secrets are scanned in CI/CD; no hardcoded credentials are permitted.
 
 ### VII. Productivity & Cost Efficiency
-Model selection (fast vs. reasoning) and token budgets are intentional: reasoning models used only for complex design decisions, fast models for routine coding tasks. LLM cost is tracked and optimized. Refactoring and cleanup workflows reuse proven patterns to minimize redundant agent invocations. Productivity metrics (manual vs. AI-assisted) are captured for retrospectives.
+Model selection and token budgets are intentional. Reasoning-heavy models are used for complex
+design decisions; faster models are used for routine implementation where risk is low. Reusable
+patterns and high-signal context are preferred to reduce unnecessary compute and review cycles.
 
 ## Domain-Specific Constraints
 
 ### Points & Redemption Logic
-- Points calculations MUST be deterministic and reversible (audit trail required)
-- Redemption workflows include pre-approval validation and human-gated final approval
-- All formula changes require spec update and retroactive audit log verification
+- Points calculations MUST be deterministic, explicit, and reproducible from ledger state.
+- No silent balance changes: all mutations MUST be event-backed, validated, and auditable.
+- Redemption workflows include pre-approval validation and human-gated final approval above
+  configured thresholds.
+- All formula changes require spec updates and retroactive audit-log verification.
 
 ### Tier & Promotion Management
-- Tier recalculation is triggered by defined business events and MUST be logged with timestamp and actor
-- Promotion eligibility rules are versioned; historical data reflects rule version at transaction time
-- Tier downgrades require explicit business justification and audit trail
+- Tier recalculation is triggered by defined business events and MUST be logged with timestamp,
+  actor, and rule version.
+- Promotion eligibility rules are versioned; historical outcomes MUST remain replayable.
+- Tier downgrades require explicit business justification and audit trail.
 
 ### Integration Requirements
-- MCP integration points are defined for external systems (loyalty partner APIs, point ledgers)
-- Mock MCP servers must exist for testing; scoped access tokens required for production
-- All third-party API calls are wrapped with circuit breakers and retry logic with exponential backoff
+- Integration boundaries MUST preserve deterministic domain behavior despite transport retries.
+- Mock external services MUST exist for repeatable tests.
+- Third-party API calls MUST use retries with idempotency keys and circuit breakers.
+
+### Architecture Guardrails
+- Core points, tier, and promotion logic MUST be implemented as pure functions where practical;
+  side effects are isolated in orchestration layers.
+- Ledger write operations MUST be append-only and idempotent by transaction reference.
+- Read models may be denormalized, but canonical balances are derived from validated ledger events.
+
+### Canonical Domain Models
+- `Member`: `member_id`, tier, points balance, lifetime points, enrollment metadata.
+- `TierDefinition`: threshold, earn multiplier, and associated perks.
+- `LedgerEntry`: transaction ID, member ID, type (`EARN` or `REDEEM`), points delta,
+  reference, created timestamp, and rule version.
+- `Promotion`: eligibility window, type, value, applicability scope, and stacking policy.
+- `RedemptionDecision`: requested points, policy checks, human gate result, and final disposition.
+
+### Explicit Assumptions
+- Time handling uses UTC and ISO-8601 timestamps.
+- Inputs are schema-validated before domain execution.
+- Event ordering is stable per member using transaction timestamp then transaction ID as tiebreaker.
+- Privacy-safe outputs default to non-PII identifiers unless policy-approved access is granted.
 
 ## Development Workflow
 
@@ -80,4 +132,4 @@ Amendments to this constitution MUST:
 ### Runtime Development Guidance
 See `.github/copilot-instructions.md` for session-specific context steering and `.github/skills/` for reusable agent/skill definitions. Constitution supersedes all other practices; conflicts escalate to technical lead.
 
-**Version**: 1.0.0 | **Ratified**: 2025-09-01 | **Last Amended**: 2025-09-01
+**Version**: 1.1.0 | **Ratified**: 2025-09-01 | **Last Amended**: 2026-09-03

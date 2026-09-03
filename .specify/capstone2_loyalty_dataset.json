@@ -1,0 +1,280 @@
+{
+  "meta": {
+    "capstone": "Loyalty & Rewards Engine",
+    "persona": "Developers",
+    "spec_driven": true,
+    "generated_at": "2026-09-14T08:00:00Z",
+    "note": "No real PII.",
+    "counts": {
+      "members": 10,
+      "transactions": 12,
+      "promotions": 3
+    }
+  },
+  "tiers": {
+    "BASE": {
+      "min_points": 0,
+      "earn_multiplier": 1.0,
+      "perks": [
+        "member rate"
+      ]
+    },
+    "SILVER": {
+      "min_points": 10000,
+      "earn_multiplier": 1.1,
+      "perks": [
+        "late checkout"
+      ]
+    },
+    "GOLD": {
+      "min_points": 30000,
+      "earn_multiplier": 1.25,
+      "perks": [
+        "room upgrade",
+        "lounge"
+      ]
+    },
+    "PLATINUM": {
+      "min_points": 75000,
+      "earn_multiplier": 1.5,
+      "perks": [
+        "suite upgrade",
+        "guaranteed availability"
+      ]
+    }
+  },
+  "members": [
+    {
+      "id": "MBR-001",
+      "name": "Amelia Hartley",
+      "email": "amelia.hartley@example.com",
+      "tier": "GOLD",
+      "points_balance": 42500,
+      "lifetime_points": 44000,
+      "enrolled_at": "2025-01-31T00:00:00Z"
+    },
+    {
+      "id": "MBR-002",
+      "name": "Rohan Mehta",
+      "email": "rohan.mehta@example.com",
+      "tier": "SILVER",
+      "points_balance": 18200,
+      "lifetime_points": 21200,
+      "enrolled_at": "2025-03-02T00:00:00Z"
+    },
+    {
+      "id": "MBR-003",
+      "name": "Sofia Alvarez",
+      "email": "sofia.alvarez@example.com",
+      "tier": "BASE",
+      "points_balance": 3400,
+      "lifetime_points": 7900,
+      "enrolled_at": "2025-04-01T00:00:00Z"
+    },
+    {
+      "id": "MBR-004",
+      "name": "Kenji Watanabe",
+      "email": "kenji.watanabe@example.com",
+      "tier": "PLATINUM",
+      "points_balance": 88000,
+      "lifetime_points": 94000,
+      "enrolled_at": "2025-05-01T00:00:00Z"
+    },
+    {
+      "id": "MBR-005",
+      "name": "Grace Okonkwo",
+      "email": "grace.okonkwo@example.com",
+      "tier": "GOLD",
+      "points_balance": 31250,
+      "lifetime_points": 38750,
+      "enrolled_at": "2025-05-31T00:00:00Z"
+    },
+    {
+      "id": "MBR-006",
+      "name": "Liam O'Brien",
+      "email": "liam.obrien@example.com",
+      "tier": "BASE",
+      "points_balance": 640,
+      "lifetime_points": 9640,
+      "enrolled_at": "2025-06-30T00:00:00Z"
+    },
+    {
+      "id": "MBR-007",
+      "name": "Priya Nair",
+      "email": "priya.nair@example.com",
+      "tier": "SILVER",
+      "points_balance": 12660,
+      "lifetime_points": 23160,
+      "enrolled_at": "2025-07-30T00:00:00Z"
+    },
+    {
+      "id": "MBR-008",
+      "name": "Thomas Fischer",
+      "email": "thomas.fischer@example.com",
+      "tier": "PLATINUM",
+      "points_balance": 99020,
+      "lifetime_points": 111020,
+      "enrolled_at": "2025-08-29T00:00:00Z"
+    },
+    {
+      "id": "MBR-009",
+      "name": "Chloe Dubois",
+      "email": "chloe.dubois@example.com",
+      "tier": "BASE",
+      "points_balance": 8900,
+      "lifetime_points": 22400,
+      "enrolled_at": "2025-09-28T00:00:00Z"
+    },
+    {
+      "id": "MBR-010",
+      "name": "Marcus Bennett",
+      "email": "marcus.bennett@example.com",
+      "tier": "SILVER",
+      "points_balance": 22050,
+      "lifetime_points": 37050,
+      "enrolled_at": "2025-10-28T00:00:00Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "TXN-0001",
+      "member_id": "MBR-001",
+      "type": "EARN",
+      "points": 1740,
+      "reference": "BK-001",
+      "created_at": "2026-09-02T01:00:00Z"
+    },
+    {
+      "id": "TXN-0002",
+      "member_id": "MBR-001",
+      "type": "EARN",
+      "points": 2534,
+      "reference": "STAY-A",
+      "created_at": "2026-09-05T02:00:00Z"
+    },
+    {
+      "id": "TXN-0003",
+      "member_id": "MBR-001",
+      "type": "REDEEM",
+      "points": -15000,
+      "reference": "AWARD-NIGHT",
+      "created_at": "2026-09-07T03:00:00Z"
+    },
+    {
+      "id": "TXN-0004",
+      "member_id": "MBR-004",
+      "type": "EARN",
+      "points": 4400,
+      "reference": "STAY-B",
+      "created_at": "2026-09-03T04:00:00Z"
+    },
+    {
+      "id": "TXN-0005",
+      "member_id": "MBR-004",
+      "type": "REDEEM",
+      "points": -40000,
+      "reference": "SUITE-AWARD",
+      "created_at": "2026-09-08T05:00:00Z"
+    },
+    {
+      "id": "TXN-0006",
+      "member_id": "MBR-002",
+      "type": "EARN",
+      "points": 910,
+      "reference": "BK-003",
+      "created_at": "2026-09-04T06:00:00Z"
+    },
+    {
+      "id": "TXN-0007",
+      "member_id": "MBR-005",
+      "type": "EARN",
+      "points": 3125,
+      "reference": "STAY-C",
+      "created_at": "2026-09-06T07:00:00Z"
+    },
+    {
+      "id": "TXN-0008",
+      "member_id": "MBR-008",
+      "type": "EARN",
+      "points": 5100,
+      "reference": "STAY-D",
+      "created_at": "2026-09-03T08:00:00Z"
+    },
+    {
+      "id": "TXN-0009",
+      "member_id": "MBR-010",
+      "type": "EARN",
+      "points": 2205,
+      "reference": "STAY-E",
+      "created_at": "2026-09-07T09:00:00Z"
+    },
+    {
+      "id": "TXN-0010",
+      "member_id": "MBR-003",
+      "type": "EARN",
+      "points": 340,
+      "reference": "FLIGHT-X",
+      "created_at": "2026-09-09T10:00:00Z"
+    },
+    {
+      "id": "TXN-0011",
+      "member_id": "MBR-007",
+      "type": "REDEEM",
+      "points": -8000,
+      "reference": "GIFTCARD",
+      "created_at": "2026-09-10T11:00:00Z"
+    },
+    {
+      "id": "TXN-0012",
+      "member_id": "MBR-009",
+      "type": "EARN",
+      "points": 890,
+      "reference": "STAY-F",
+      "created_at": "2026-09-04T00:00:00Z"
+    }
+  ],
+  "promotions": [
+    {
+      "id": "PROMO-1",
+      "name": "Double Points Weekend",
+      "type": "EARN_MULTIPLIER",
+      "value": 2.0,
+      "start": "2026-09-20",
+      "end": "2026-09-22",
+      "applies_to": [
+        "ROOM"
+      ]
+    },
+    {
+      "id": "PROMO-2",
+      "name": "5k Bonus on 3rd Stay",
+      "type": "BONUS_POINTS",
+      "value": 5000,
+      "threshold_stays": 3,
+      "start": "2026-09-01",
+      "end": "2026-12-31"
+    },
+    {
+      "id": "PROMO-3",
+      "name": "Flight Redemption -20%",
+      "type": "REDEEM_DISCOUNT",
+      "value": 0.2,
+      "start": "2026-10-01",
+      "end": "2026-10-31",
+      "applies_to": [
+        "FLIGHT"
+      ]
+    }
+  ],
+  "earn_rules": {
+    "base_points_per_usd": 10,
+    "tier_multiplier_from": "tiers",
+    "promo_stackable": false,
+    "redemption": {
+      "award_night_points": 15000,
+      "suite_award_points": 40000,
+      "points_per_usd_value": 0.007
+    },
+    "human_gate_redeem_over": 30000
+  }
+}
