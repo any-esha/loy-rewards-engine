@@ -1,0 +1,6 @@
+import { api } from '../api'
+import { demoPromotions } from '../data'
+import { useApi } from '../hooks'
+import { ErrorState, Loading, SectionHeading } from '../components/Ui'
+
+export default function Promotions() { const { data, loading, error } = useApi(api.getPromotions, demoPromotions); if (loading) return <Loading label="Loading promotions" />; return <><SectionHeading eyebrow="CAMPAIGN CALENDAR" title="Promotions" action={<span className="live-pill">{data.length} ACTIVE</span>} />{error && <ErrorState message={error} />}<div className="promotion-grid">{data.map((promo) => <article className="panel promotion-card" key={promo.id}><div className="promotion-top"><span className="promo-icon">✦</span><span className="live-pill">ACTIVE</span></div><div className="eyebrow">{promo.id}</div><h2>{promo.name}</h2><div className="promotion-value">{promo.type === 'EARN_MULTIPLIER' ? `${promo.value}×` : `+${promo.value.toLocaleString()}`}<small>{promo.type === 'EARN_MULTIPLIER' ? 'multiplier' : 'bonus points'}</small></div><div className="date-row"><span>Valid from <b>{promo.start}</b></span><span>Through <b>{promo.end}</b></span></div>{promo.applies_to?.length ? <div className="scope">Applies to {promo.applies_to.join(', ')}</div> : null}</article>)}</div></> }

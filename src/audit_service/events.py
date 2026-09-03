@@ -20,3 +20,20 @@ def build_earn_audit_event(
         lifetime_before=member_before.lifetime_points,
         lifetime_after=member_after.lifetime_points,
     )
+
+
+def build_redeem_audit_event(
+    member_before: Member,
+    member_after: Member,
+    transaction: Transaction,
+) -> AuditEvent:
+    return AuditEvent(
+        event_type=AuditEventType.REDEEM,
+        member_id=member_before.member_id,
+        transaction_id=transaction.transaction_id,
+        points_delta=transaction.points,
+        balance_before=member_before.points_balance,
+        balance_after=member_after.points_balance,
+        lifetime_before=member_before.lifetime_points,
+        lifetime_after=member_after.lifetime_points,
+    )

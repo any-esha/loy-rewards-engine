@@ -19,3 +19,10 @@ class Member(BaseModel):
                 "lifetime_points": self.lifetime_points + points,
             }
         )
+
+    def with_redeem(self, points: int) -> "Member":
+        if points <= 0:
+            raise ValueError("redemption points must be positive")
+        if points > self.points_balance:
+            raise ValueError("redemption exceeds points balance")
+        return self.model_copy(update={"points_balance": self.points_balance - points})

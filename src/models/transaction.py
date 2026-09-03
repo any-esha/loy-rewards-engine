@@ -23,3 +23,14 @@ def build_earn_transaction(member_id: str, points: int, reference: str | None = 
         points=points,
         reference=reference,
     )
+
+
+def build_redeem_transaction(
+    member_id: str, points: int, reference: str | None = None
+) -> Transaction:
+    return Transaction(
+        member_id=member_id,
+        type=TransactionType.REDEEM,
+        points=-points,
+        reference=reference,
+    )

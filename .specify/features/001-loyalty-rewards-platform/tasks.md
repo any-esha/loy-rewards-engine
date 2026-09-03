@@ -51,7 +51,7 @@
 
 - [X] T010 [P] [US1] Add unit tests for base-point and tier-multiplier calculations in `tests/unit/rules_engine/test_earn_rules.py`
 - [ ] T011 [P] [US1] Add unit tests for active-promotion filtering by date/category in `tests/unit/promotion_engine/test_eligibility.py`
-- [ ] T012 [P] [US1] Add unit tests enforcing `promo_stackable=false` deterministic single-promo selection in `tests/unit/promotion_engine/test_selection.py`
+- [X] T012 [P] [US1] Add unit tests enforcing `promo_stackable=false` deterministic single-promo selection in `tests/unit/promotion_engine/test_selection.py`
 - [X] T013 [P] [US1] Add unit tests for earn audit payload creation and PII-safe fields in `tests/unit/audit_service/test_events.py`
 - [X] T014 [US1] Add integration test for full `earn()` flow (transaction, balance, lifetime, audit) in `tests/integration/test_earn_flow.py`
 
@@ -59,7 +59,7 @@
 
 - [ ] T015 [P] [US1] Implement promotion eligibility evaluation for earn context in `src/promotion_engine/eligibility.py`
 - [ ] T016 [P] [US1] Implement deterministic non-stackable promotion selection in `src/promotion_engine/selection.py`
-- [ ] T017 [P] [US1] Implement promotion effect application for earn multipliers/bonus in `src/promotion_engine/application.py`
+- [X] T017 [P] [US1] Implement promotion effect application for earn multipliers/bonus in `src/promotion_engine/application.py`
 - [X] T018 [P] [US1] Implement EARN audit payload factory and output sanitizer in `src/audit_service/events.py` and `src/audit_service/sanitizer.py`
 - [X] T019 [US1] Implement pure `earn()` composition function in `src/rules_engine/earn_rules.py` using deterministic helpers and promotion engine modules
 - [X] T020 [US1] Implement audit write orchestration contract for earn events in `src/audit_service/writer.py`
@@ -81,7 +81,7 @@ rejection behavior, transaction creation, balance update, and audit entry creati
 ### Tests for User Story 2 (pytest) ⚠️
 
 - [ ] T022 [P] [US2] Add unit tests for fixed redemption cost lookup (Award Night and Suite Award) in `tests/unit/rules_engine/test_redemption_rules.py`
-- [ ] T023 [P] [US2] Add unit tests for insufficient-balance rejection in `tests/unit/redemption_service/test_validate.py`
+- [X] T023 [P] [US2] Add unit tests for insufficient-balance rejection in `tests/unit/redemption_service/test_validate.py`
 - [ ] T024 [P] [US2] Add unit tests for REDEEM audit payload creation in `tests/unit/audit_service/test_events.py`
 - [ ] T025 [US2] Add integration test for full `redeem()` flow (transaction, balance, audit) in `tests/integration/test_redeem_flow.py`
 
@@ -90,7 +90,7 @@ rejection behavior, transaction creation, balance update, and audit entry creati
 - [ ] T026 [P] [US2] Implement fixed reward cost rules for redemption in `src/rules_engine/redemption_rules.py`
 - [ ] T027 [P] [US2] Implement redemption validation (including insufficient balance check) in `src/redemption_service/validate.py`
 - [ ] T028 [P] [US2] Implement REDEEM audit payload factory and sanitizer integration in `src/audit_service/events.py` and `src/audit_service/sanitizer.py`
-- [ ] T029 [US2] Implement `redeem()` orchestration that emits REDEEM transaction and updated balance in `src/redemption_service/process.py`
+- [X] T029 [US2] Implement `redeem()` orchestration that emits REDEEM transaction and updated balance in `src/redemption_service/process.py`
 
 **Checkpoint**: User Story 2 is independently functional and testable.
 
@@ -114,8 +114,8 @@ and changed-tier return semantics.
 
 ### Implementation for User Story 3
 
-- [ ] T034 [P] [US3] Implement pure tier threshold evaluator using lifetime points in `src/rules_engine/tier_rules.py`
-- [ ] T035 [P] [US3] Implement `recalc_tier()` decision function that returns prior tier when unchanged and new tier when crossed in `src/tier_recalculation_service/evaluate.py`
+- [X] T034 [P] [US3] Implement pure tier threshold evaluator using lifetime points in `src/rules_engine/tier_rules.py`
+- [X] T035 [P] [US3] Implement `recalc_tier()` decision function that returns prior tier when unchanged and new tier when crossed in `src/tier_recalculation_service/evaluate.py`
 - [ ] T036 [US3] Implement orchestration wrapper that emits tier change payload only on change in `src/tier_recalculation_service/recalculate.py`
 
 **Checkpoint**: User Story 3 is independently functional and testable.

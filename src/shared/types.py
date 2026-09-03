@@ -20,6 +20,12 @@ class AuditEventType(str, Enum):
     REDEEM = "REDEEM"
 
 
+class RedemptionStatus(str, Enum):
+    APPROVED = "APPROVED"
+    PENDING_APPROVAL = "PENDING_APPROVAL"
+    REJECTED = "REJECTED"
+
+
 TIER_MULTIPLIERS: dict[Tier, float] = {
     Tier.BASE: 1.0,
     Tier.SILVER: 1.1,
